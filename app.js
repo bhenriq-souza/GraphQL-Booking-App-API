@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const graphqlHttp = require('express-graphql');
 const { buildSchema } = require('graphql');
+const mongoose = require('mongoose');
 
 const PORT = 3000;
 const app = express();
@@ -57,5 +58,13 @@ app.use('/graphql', graphqlHttp({
   graphiql: true
 }));
 
-app.listen(PORT);
-console.log(`Server listening to port ${PORT} ...`);
+const connectionString = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@graphql-course-shard-00-00-gx1ie.mongodb.net:27017,graphql-course-shard-00-01-gx1ie.mongodb.net:27017,graphql-course-shard-00-02-gx1ie.mongodb.net:27017/test?ssl=true&replicaSet=graphql-course-shard-0&authSource=admin&retryWrites=true`;
+mongoose.connect(connectionString, { useNewUrlParser: true })
+  .then(() => {
+    console.log(`MongoDB connected to graphql-course ...`);
+    app.listen(PORT);
+    console.log(`Server listening to port ${PORT} ...`);
+  })
+  .catch( err => console.log(err));
+
+
