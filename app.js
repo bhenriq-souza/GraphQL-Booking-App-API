@@ -4,10 +4,10 @@ const graphqlHttp = require('express-graphql');
 const { buildSchema } = require('graphql');
 const mongoose = require('mongoose');
 
+const { Event } = require('./models');
+
 const PORT = 3000;
 const app = express();
-
-const events = [];
 
 app.use(bodyParser.json());
 
@@ -20,7 +20,7 @@ app.use('/graphql', graphqlHttp({
       price: Float!
       date: String!
     }
-
+    
     input EventInput {
       title: String!
       description: String!
@@ -42,26 +42,37 @@ app.use('/graphql', graphqlHttp({
     }
   `),
   rootValue: {
-    events: () => events,
+    events: () => {
+      return Event.find()
+        .then( events => events.map(event => event._doc))
+        .catch( err => { throw err });
+    },
     createEvent: args => {
-      const event = {
-        _id: Math.random().toString(),
+      const event = new Event({
         title: args.eventInput.title,
         description: args.eventInput.description,
         price: +args.eventInput.price,
-        date: args.eventInput.date
-      };
-      events.push(event);
-      return event;
+        date: new Date(args.eventInput.date)
+      });
+      return event
+        .save()
+        .then( result => result._doc )
+        .catch( err => { throw err } );
     }
   },
   graphiql: true
 }));
 
-const connectionString = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@graphql-course-shard-00-00-gx1ie.mongodb.net:27017,graphql-course-shard-00-01-gx1ie.mongodb.net:27017,graphql-course-shard-00-02-gx1ie.mongodb.net:27017/test?ssl=true&replicaSet=graphql-course-shard-0&authSource=admin&retryWrites=true`;
+const connectionString = `mongodb://${
+    process.env.MONGO_USER
+  }:${
+    process.env.MONGO_PASSWORD
+  }@graphql-course-shard-00-00-gx1ie.mongodb.net:27017,graphql-course-shard-00-01-gx1ie.mongodb.net:27017,graphql-course-shard-00-02-gx1ie.mongodb.net:27017/${
+    process.env.MONGO_DATABASE
+  }?ssl=true&replicaSet=graphql-course-shard-0&authSource=admin&retryWrites=true`;
 mongoose.connect(connectionString, { useNewUrlParser: true })
   .then(() => {
-    console.log(`MongoDB connected to graphql-course ...`);
+    console.log(`MongoDB connected to ${process.env.MONGO_DATABASE} ...`);
     app.listen(PORT);
     console.log(`Server listening to port ${PORT} ...`);
   })
