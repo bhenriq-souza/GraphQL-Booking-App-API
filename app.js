@@ -3,8 +3,9 @@ const bodyParser = require('body-parser');
 const graphqlHttp = require('express-graphql');
 const { buildSchema } = require('graphql');
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
-const { Event } = require('./models');
+const { Event, User } = require('./models');
 
 const PORT = 3000;
 const app = express();
@@ -19,6 +20,14 @@ app.use('/graphql', graphqlHttp({
       description: String!
       price: Float!
       date: String!
+      creator: User!
+    }
+
+    type User {
+      _id: ID!
+      email: String!
+      password: String,
+      createdEvents: [Event!]
     }
     
     input EventInput {
@@ -26,6 +35,12 @@ app.use('/graphql', graphqlHttp({
       description: String!
       price: Float!
       date: String!
+      creator: String!
+    }
+
+    input UserInput {
+      email: String!
+      password: String!
     }
 
     type RootQuery {
@@ -34,6 +49,7 @@ app.use('/graphql', graphqlHttp({
 
     type RootMutation {
       createEvent(eventInput: EventInput): Event
+      createUser(userInput: UserInput): User
     }
 
     schema {
@@ -42,22 +58,61 @@ app.use('/graphql', graphqlHttp({
     }
   `),
   rootValue: {
-    events: () => {
-      return Event.find()
-        .then( events => events.map(event => event._doc))
-        .catch( err => { throw err });
+    events: async () => {
+      try {
+        const events = await Event
+          .find()
+          .populate('creator');
+        let result = null
+        if(events) {
+          result = events.map(event => event._doc);
+        }
+        return result;
+      } catch (error) {
+        throw error;
+      }
     },
-    createEvent: args => {
+    createEvent: async args => {
+      const userId = args.eventInput.creator;
+      const creator = await User.findOne({ _id: userId });
+      if(!creator) {
+        throw new Error('User creator does not exists.');
+      }
       const event = new Event({
         title: args.eventInput.title,
         description: args.eventInput.description,
         price: +args.eventInput.price,
-        date: new Date(args.eventInput.date)
+        date: new Date(args.eventInput.date),
+        creator: userId
       });
-      return event
-        .save()
-        .then( result => result._doc )
-        .catch( err => { throw err } );
+      try {
+        let result = null;
+        result = await event.save();
+        if(result) {
+          creator.createdEvents.push(result);
+          await creator.save();
+        }
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    createUser: async args => {
+      try {
+        const email = args.userInput.email;
+        const userResult = User.findOne({ email: email });
+        if(userResult) {
+          throw new Error('User already exists.');
+        }
+        const hash = bcrypt.hashSync(args.userInput.password, 12);
+        const user = new User({
+          email: args.userInput.email,
+          password: hash
+        });
+        return await user.save();
+      } catch (error) {
+        throw error;
+      }
     }
   },
   graphiql: true
