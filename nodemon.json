@@ -1,7 +1,10 @@
 {
   "env": {
+    "SERVER_PORT": 3000,
+    "MONGO_HOST": "graphql-course-shard-00-00-gx1ie.mongodb.net:27017,graphql-course-shard-00-01-gx1ie.mongodb.net:27017,graphql-course-shard-00-02-gx1ie.mongodb.net:27017",
     "MONGO_USER": "bhenriq-souza",
     "MONGO_PASSWORD": "xxL9GpTRrEr5yWR",
-    "MONGO_DATABASE": "events-react-dev"
+    "MONGO_DATABASE": "events-react-dev",
+    "MONGO_CONFIG": "?ssl=true&replicaSet=graphql-course-shard-0&authSource=admin&retryWrites=true"
   }
 }

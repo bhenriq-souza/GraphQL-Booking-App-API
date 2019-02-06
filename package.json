@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "./node_modules/.bin/eslint *.js",
     "start": "nodemon app.js"
   },
   "author": "Bruno Souza",
@@ -12,10 +13,15 @@
   "dependencies": {
     "bcrypt": "^3.0.3",
     "body-parser": "^1.18.3",
+    "eslint": "^5.12.1",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.15.0",
     "express": "^4.16.4",
     "express-graphql": "^0.7.1",
     "graphql": "^14.1.1",
+    "lodash": "^4.17.11",
     "mongoose": "^5.4.9",
-    "nodemon": "^1.18.9"
+    "nodemon": "^1.18.9",
+    "winston": "^3.2.1"
   }
 }
