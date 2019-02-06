@@ -3,6 +3,7 @@ const graphqlHttp = require('express-graphql');
 const { GraphQLSchemas, GraphQLResolvers } = require('../graphql');
 const { Logger } = require('../utils');
 const { MongoConnection } = require('../database');
+const { AuthMiddleware } = require('../middleware');
 
 class Server {
   /**
@@ -31,6 +32,9 @@ class Server {
 
       // Using body-parser
       this.app.use(bodyParser.json());
+
+      // Using auth middleware
+      this.app.use(AuthMiddleware);
 
       // Setting graphQL
       this.app.use('/graphql', graphqlHttp({

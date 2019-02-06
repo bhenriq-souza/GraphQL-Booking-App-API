@@ -1,7 +1,7 @@
 
 const { Event, User } = require('../../models');
 const { Logger } = require('../../utils');
-const { ResolverUtils } = require('../../utils');
+const { AuthUtil, ResolverUtils } = require('../../utils');
 
 const logger = Logger.createLogger('info');
 
@@ -16,9 +16,10 @@ module.exports = {
       throw error;
     }
   },
-  createEvent: async (args) => {
+  createEvent: async (args, req) => {
+    AuthUtil.isAuthorized(req);
     logger.info('A mutation was send to createEvent');
-    const userId = args.eventInput.creator;
+    const { userId } = req;
     try {
       const creator = await User.findOne({ _id: userId });
       if (!creator) {
@@ -29,7 +30,7 @@ module.exports = {
         description: args.eventInput.description,
         price: +args.eventInput.price,
         date: new Date(args.eventInput.date),
-        creator: userId,
+        creator,
       });
       let result = null;
       result = await event.save();

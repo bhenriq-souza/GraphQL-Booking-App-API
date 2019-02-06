@@ -1,11 +1,12 @@
 const { Booking, Event } = require('../../models');
 const { Logger } = require('../../utils');
-const { ResolverUtils } = require('../../utils');
+const { AuthUtil, ResolverUtils } = require('../../utils');
 
 const logger = Logger.createLogger('info');
 
 module.exports = {
-  bookings: async () => {
+  bookings: async (args, req) => {
+    AuthUtil.isAuthorized(req);
     logger.info('A query was send to bookings');
     try {
       const bookings = await Booking.find();
@@ -15,10 +16,11 @@ module.exports = {
       throw error;
     }
   },
-  bookEvent: async (args) => {
+  bookEvent: async (args, req) => {
+    AuthUtil.isAuthorized(req);
     logger.info('A mutation was send to bookEvent');
     const { eventId } = args;
-    const userId = '5c5884b427bb9d55d2b6fad8';
+    const { userId } = req;
     try {
       const event = await Event.findOne({ _id: eventId });
       if (!event) {
@@ -35,7 +37,8 @@ module.exports = {
       throw error;
     }
   },
-  cancelBooking: async (args) => {
+  cancelBooking: async (args, req) => {
+    AuthUtil.isAuthorized(req);
     logger.info('A mutation was send to cancelBooking');
     const { bookingId } = args;
     try {
