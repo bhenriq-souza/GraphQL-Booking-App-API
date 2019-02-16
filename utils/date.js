@@ -1,8 +1,8 @@
 /**
  * Convert a ISO Date from MongoDB into a more readable format
- * 
+ *
  * @param {String} date
- * 
+ *
  * @returns {String} Formated date
  */
 function dateToString(date) {
@@ -10,5 +10,5 @@ function dateToString(date) {
 }
 
 module.exports = {
-  dateToString
-}
+  dateToString,
+};
