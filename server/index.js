@@ -1,9 +1,9 @@
-const bodyParser = require('body-parser');
-const graphqlHttp = require('express-graphql');
-const { GraphQLSchemas, GraphQLResolvers } = require('../graphql');
-const { Logger } = require('../utils');
-const { MongoConnection } = require('../database');
-const { AuthMiddleware } = require('../middleware');
+const bodyParser = require("body-parser");
+const graphqlHttp = require("express-graphql");
+const { GraphQLSchemas, GraphQLResolvers } = require("../graphql");
+const { Logger } = require("../utils");
+const { MongoConnection } = require("../database");
+const { AuthMiddleware } = require("../middleware");
 
 class Server {
   /**
@@ -15,7 +15,7 @@ class Server {
   constructor(app, mongoose) {
     this.app = app;
     this.mongoose = mongoose;
-    this.logger = Logger.createLogger('info');
+    this.logger = Logger.createLogger("info");
   }
 
   /**
@@ -36,15 +36,29 @@ class Server {
       // Using auth middleware
       this.app.use(AuthMiddleware);
 
+      // Setting CORS config
+      this.app.use((req, res, next) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        if (req.method === 'OPTIONS') {
+          return res.sendStatus(200);
+        }
+        next();
+      });
+
       // Setting graphQL
-      this.app.use('/graphql', graphqlHttp({
-        schema: GraphQLSchemas,
-        rootValue: GraphQLResolvers,
-        graphiql: true,
-      }));
+      this.app.use(
+        "/graphql",
+        graphqlHttp({
+          schema: GraphQLSchemas,
+          rootValue: GraphQLResolvers,
+          graphiql: true
+        })
+      );
 
       // Setting mongoose's index creation as true
-      this.mongoose.set('useCreateIndex', true);
+      this.mongoose.set("useCreateIndex", true);
 
       // Setting MongoDB connect
       this.mongooseConn = new MongoConnection(this.mongoose, mongo);

@@ -1,13 +1,12 @@
+const { Event, User } = require("../../models");
+const { Logger } = require("../../utils");
+const { AuthUtil, ResolverUtils } = require("../../utils");
 
-const { Event, User } = require('../../models');
-const { Logger } = require('../../utils');
-const { AuthUtil, ResolverUtils } = require('../../utils');
-
-const logger = Logger.createLogger('info');
+const logger = Logger.createLogger("info");
 
 module.exports = {
   events: async () => {
-    logger.info('A query was send to events');
+    logger.info("A query was send to events");
     try {
       const events = await Event.find();
       return events.map(event => ResolverUtils.transformEvent(event));
@@ -18,19 +17,19 @@ module.exports = {
   },
   createEvent: async (args, req) => {
     AuthUtil.isAuthorized(req);
-    logger.info('A mutation was send to createEvent');
+    logger.info("A mutation was send to createEvent");
     const { userId } = req;
     try {
       const creator = await User.findOne({ _id: userId });
       if (!creator) {
-        throw new Error('User creator does not exists.');
+        throw new Error("User creator does not exists.");
       }
       const event = new Event({
         title: args.eventInput.title,
         description: args.eventInput.description,
         price: +args.eventInput.price,
         date: new Date(args.eventInput.date),
-        creator,
+        creator
       });
       let result = null;
       result = await event.save();
@@ -43,5 +42,5 @@ module.exports = {
       logger.warn(error);
       throw error;
     }
-  },
+  }
 };

@@ -24,6 +24,7 @@ module.exports = {
     }
   },
   login: async (args) => {
+    logger.info('A qeury was send to login');
     const { email, password } = args;
     const user = await User.findOne({ email });
     if (!user) {
